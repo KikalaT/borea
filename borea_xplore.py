@@ -12,6 +12,7 @@ from sklearn.discriminant_analysis import LinearDiscriminantAnalysis as LDA
 from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
 from sklearn.manifold import TSNE
+from sklearn.cluster import KMeans
 
 
 sns.set()
@@ -59,11 +60,18 @@ specie_hue = st.sidebar.selectbox(
      top25.index
      )
 
-st.sidebar.markdown('__(ACP), (T-SNE), (LDA)__') 
+st.sidebar.markdown('__ACP, T-SNE, LDA__') 
 
 specie_target = st.sidebar.selectbox(
     'Espèce cible',
      top25.index
+     )
+     
+st.sidebar.markdown('__K-Means__') 
+
+n_clusters = st.sidebar.selectbox(
+    'Nombre de clusters',
+     range(2,10)
      )
      
      
@@ -246,7 +254,7 @@ def plot_figure9():
 	st.pyplot()
 plot_figure9()
 """
-## T-SNE (t-distributed stochastic neighbor embedding)***
+## T-SNE avec K-MEANS associé***
 ---
 * représentation des coordonnées dans un plan (AXE_1 / AXE_2) en fonction de l'espèce 'cible'
 """
@@ -254,16 +262,27 @@ plot_figure9()
 
 @st.cache(suppress_st_warning=True)
 def plot_figure10():
-
-	tsne_new = TSNE(n_components=2, random_state=0)
-	Coord_TSNE_ACP = tsne_new.fit_transform(Coord)
-	tsne_acp_df = pd.DataFrame({'AXE_1':Coord_TSNE_ACP[:,0],
-							   'AXE_2':Coord_TSNE_ACP[:,1],
-							   specie_target:target})
-
-	sns.scatterplot(data=tsne_acp_df,x='AXE_1',y='AXE_2',hue=specie_target,palette='viridis');
-
-	st.pyplot()
+	
+	#TSNE
+	tsne_new=TSNE(n_components=2,random_state=0)
+	Coord_TSNE_ACP=tsne_new.fit_transform(Coord)
+	tsne_acp_df=pd.DataFrame({'AXE_1':Coord_TSNE_ACP[:,0],
+							'AXE_2':Coord_TSNE_ACP[:,1],
+							specie_target:target})
+	ax = sns.scatterplot(data=tsne_acp_df,x='AXE_1',y='AXE_2',hue=specie_target,palette='viridis');
+	#K-Means
+	df_kmeans_tsne=pd.DataFrame(tsne_acp_df,columns=['AXE_1','AXE_2'])
+	kmeans_tsne=KMeans(n_clusters=n_clusters)
+	kmeans_tsne.fit(df_kmeans_tsne)
+	y_kmeans=kmeans_tsne.predict(df_kmeans_tsne)
+	#datapre-processing
+	y_kmeans_s=pd.Series(y_kmeans,name='cluster')
+	df_=pd.concat([df_kmeans_tsne,y_kmeans_s],axis=1)
+	#figure
+	for i in range(len(kmeans_tsne.cluster_centers_)):
+		circle = plt.Circle(xy=(kmeans_tsne.cluster_centers_[i,0], kmeans_tsne.cluster_centers_[i,1]), radius=0.5, color='orange', fill=True, alpha=0.5)
+		ax.add_patch(circle)
+	st.pyplot(plt)
 plot_figure10()
 
 """
@@ -271,6 +290,7 @@ plot_figure10()
 ---
 * représentation des coordonnées dans un plan (AXE_1 / AXE_2) en fonction de l'espèce 'cible'
 """
+
 'Cible : ',specie_target
 
 @st.cache(suppress_st_warning=True)
