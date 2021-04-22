@@ -88,31 +88,30 @@ df = df.rename(columns={'index':'date'})
 df['date'] = pd.to_datetime(df['date'])
 
 """
+#### Matrice de corrélation entre les 25 espèces les plus représentées
+---
+"""
+@st.cache(suppress_st_warning=True)
+def plot_figure1():
+	plt.figure(figsize=(18,11))
+	sns.heatmap(df.iloc[:,0:24].corr(),annot=True,cmap='viridis')
+	st.pyplot()
+plot_figure1()
+
+"""
 #### Représentation des occurrences au cours des années***
 ---
 """
 'Espèces : ',specie1,specie2,specie_hue
 
 @st.cache(suppress_st_warning=True)
-def plot_figure1():
+def plot_figure2():
 	plt.figure(figsize=(15,6))
 	sns.lineplot(data=df, x='date', y=specie1, label=specie1)
 	sns.lineplot(data=df, x='date', y=specie2, label=specie2)
 	sns.lineplot(data=df, x='date', y=specie_hue, label=specie_hue)
 	st.pyplot()
-plot_figure1()
-
-"""
-#### Matrice de corrélation entre les 25 espèces les plus représentées
----
-"""
-@st.cache(suppress_st_warning=True)
-def plot_figure2():
-	plt.figure(figsize=(18,11))
-	sns.heatmap(df.iloc[:,0:24].corr(),annot=True,cmap='viridis')
-	st.pyplot()
 plot_figure2()
-
 
 """
 #### Distribution par espèces***
