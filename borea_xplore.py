@@ -11,8 +11,7 @@ sns.set()
 st.title('BOREA-XPLORE')
 
 """
-## PIERRE NOIRE
-### Présentation :
+## Présentation :
 * Le Laboratoire de Biologie des Organismes et des Ecosystèmes Aquatiques - BOREA - a pour objectif l’étude de l’écologie et de la biologie des organismes et des habitats aquatiques dans des écosystèmes naturels et contraints.
 * Il s’agit de comprendre, par une approche multidisciplinaire et intégrative, l’origine, le rôle et les mécanismes de l’évolution de la biodiversité aquatique (des molécules aux écosystèmes), les interactions des organismes entre eux et avec leurs milieux de vie et les réponses aux changements globaux, anthropiques et climatiques. 
 
@@ -133,11 +132,11 @@ sns.heatmap(df.iloc[:,0:24].corr(),annot=True,cmap='viridis')
 st.pyplot()
 
 """
-#### Aperçu des relations entre 3 espèces paramétré par la présence d'une 4ème espèce
+#### Relations entre espèces
 --- 
 """
 
-sns.pairplot(data=df, vars=[specie1,specie2,specie3], hue=specie_hue)
+sns.scatterplot(data=top25_df, x=specie1, y=specie2, size=specie3, hue=specie_hue,palette='viridis')
 st.pyplot()
 
 """
@@ -241,9 +240,6 @@ tsne_acp_df = pd.DataFrame({'AXE_1':Coord_TSNE_ACP[:,0],
                            'AXE_2':Coord_TSNE_ACP[:,1],
                            specie_target:target})
 
-sns.scatterplot(data=tsne_acp_df,
-               x='AXE_1',
-               y='AXE_2',
-               hue=specie_target);
+sns.scatterplot(data=tsne_acp_df,x='AXE_1',y='AXE_2',hue=specie_target,palette='viridis');
 
 st.pyplot()
