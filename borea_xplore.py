@@ -244,7 +244,7 @@ def plot_figure9():
 	st.pyplot()
 plot_figure9()
 """
-### T-SNE (t-distributed stochastic neighbor embedding)***
+## T-SNE (t-distributed stochastic neighbor embedding)***
 ---
 * représentation des coordonnées dans un plan (AXE_1 / AXE_2) en fonction de l'espèce 'cible'
 """
@@ -265,7 +265,7 @@ def plot_figure10():
 plot_figure10()
 
 """
-### LDA (Analyse par Discriminant Linéaire)***
+## LDA (Analyse par Discriminant Linéaire)***
 ---
 * représentation des coordonnées dans un plan (AXE_1 / AXE_2) en fonction de l'espèce 'cible'
 """
