@@ -203,6 +203,8 @@ plot_figure7()
 ### Coefficient de corrélation de chaque variable de l'ACP sur les deux premiers axes
 ---
 """
+'Cible : ',specie_target
+
 @st.cache(suppress_st_warning=True)
 def plot_figure8():
 	Comp_PCA = pd.DataFrame({'PC1':pca.components_[:,0],'PC2':pca.components_[:,1]})
