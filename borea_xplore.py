@@ -7,6 +7,9 @@ from datetime import date, timedelta
 import streamlit as st
 import matplotlib.pyplot as plt
 import seaborn as sns
+from bokeh.plotting import figure
+from bokeh.models import ColumnDataSource
+from bokeh.models.tools import HoverTool
 
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis as LDA
 from sklearn.preprocessing import StandardScaler
@@ -112,13 +115,16 @@ plot_figure1()
 """
 'Espèces : ',specie1,specie2,specie_hue
 
-@st.cache(suppress_st_warning=True)
 def plot_figure2():
-	plt.figure(figsize=(15,6))
-	sns.lineplot(data=df, x='date', y=specie1, label=specie1)
-	sns.lineplot(data=df, x='date', y=specie2, label=specie2)
-	sns.lineplot(data=df, x='date', y=specie_hue, label=specie_hue)
-	st.pyplot()
+	data = ColumnDataSource(df)
+	f2 = figure(plot_width=800,plot_height=400, x_axis_type="datetime")
+	r1 = f2.line(source=data,x='date', y=specie1,color='blue', legend_label=specie1, name=specie1)
+	r2 = f2.line(source=data,x='date', y=specie2, color='green', legend_label=specie2, name=specie2)
+	r3 = f2.line(source=data,x='date', y=specie_hue, color='orange', legend_label=specie_hue, name=specie_hue)
+	h1 = HoverTool(renderers = [r1,r2,r3],tooltips = [("espèce","$name"),("date","@date{%F}"),("valeur","$y{0}")],formatters={"@date":"datetime"})
+	f2.add_tools(h1)
+	f2.legend.click_policy='hide'
+	st.bokeh_chart(f2)
 plot_figure2()
 
 """
@@ -207,6 +213,7 @@ def plot_figure7():
 	plt.legend(loc='best',labels=labels)
 	st.pyplot()
 plot_figure7()
+
 """
 ### Coefficient de corrélation de chaque variable de l'ACP sur les deux premiers axes
 ---
@@ -302,10 +309,11 @@ def plot_figure11():
 							   'AXE_2':X_LDA[:,1],
 							   specie_target:target})
 							   
-	sns.scatterplot(data=lda_df, x='AXE_1',y='AXE_2',hue=specie_target)
+	scatter = sns.scatterplot(data=lda_df, x='AXE_1',y='AXE_2',hue=specie_target)
 	plt.title('Analyse par Discriminant Linéaire')
 	plt.ylabel('AXE_1')
 	plt.xlabel('AXE_2')
+	scatter.set_xlim([-25,25])
 
 	st.pyplot()
 plot_figure11()
