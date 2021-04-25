@@ -30,11 +30,20 @@ st.title('BOREA-XPLORE')
 source : Données d’abondance d’espèces macrobenthiques provenant de la station de prélèvements biologiques de Pierre Noire, en Baie de Morlaix.
 """
 
-# load data
+# load data (pierre noire)
 df = pd.read_csv('pierre-noire-complet.csv',index_col=0)
 df = df.T
 
- 
+# load data (somlit)
+df_somlit = pd.read_csv('data_somlit_roscoff.csv',sep=';', skiprows=2)
+df_somlit_headers = df_somlit.iloc[0,:]
+df_somlit = df_somlit.drop(axis=0, labels=0)
+df_somlit['DATE'] = pd.to_datetime(df_somlit['DATE'])
+df_somlit = df_somlit.set_index('DATE')
+num_vars = ['T', 'S', 'O', 'NH4', 'NO3', 'NO2', 'PO4', 'SIOH4', 'COP', 'NOP', 'MES', 'CHLA']
+df_somlit = df_somlit.loc[:,num_vars]
+
+
 """
 #### Tableau des 25 espèces les plus représentées avec occurrences
 ---
@@ -48,7 +57,7 @@ top25_df
 # sidebar
 
 st.sidebar.header('Outils')
-st.sidebar.markdown('__Visualisation__')
+st.sidebar.markdown('__Séries temporelles__')
 
 specie1 = st.sidebar.selectbox(
     'Espèce 1',
@@ -76,7 +85,18 @@ n_clusters = st.sidebar.selectbox(
     'Nombre de clusters',
      range(2,10)
      )
+
+st.sidebar.markdown('__Corrélation Espèce / Paramètre (Somlit)__')
+
+specie_corr = st.sidebar.selectbox(
+    'Espèce',
+     top25.index
+     )
      
+param_corr = st.sidebar.selectbox(
+    'Donnée physico-chimique',
+     df_somlit.columns
+     )
      
 """
 #### Histogramme des 25 espèces les plus représentées avec occurrences
@@ -317,3 +337,44 @@ def plot_figure11():
 
 	st.pyplot()
 plot_figure11()
+
+"""
+## Corrélation entre Espèce et Donnée hysico-chimique
+---
+* issus des données physiques, chimiques de la colonne d’eau (SOMLIT)
+"""
+
+
+def plot_figure12():
+	# load data
+	df1 = top25_df
+	df2 = df_somlit
+	# data cleaning
+	df1 = df1[~df1.index.duplicated()]
+	df2 = df2[~df2.index.duplicated()]
+	df1[specie_corr] = df1[specie_corr].astype('int64')
+	df2[param_corr] = df2[param_corr].astype('float64')
+	df2 = df2[~((df2[param_corr] == 999999) | (df2[param_corr] == 999996))]
+	df1.index = pd.to_datetime(df1.index)
+	df2.index = pd.to_datetime(df2.index)
+	df_merged = df1.merge(df2, how='outer', left_index=True, right_index=True)
+	df_merged['DATE_M_Y'] = df_merged.index.to_period('M')
+	df_ = pd.DataFrame({specie_corr:df_merged.groupby('DATE_M_Y')[specie_corr].sum(),
+						param_corr:df_merged.groupby('DATE_M_Y')[param_corr].mean()
+						})
+	# bokeh figure
+	p = figure(plot_width=800,plot_height=600)
+	r = p.circle(source=df_,
+         x=specie_corr,
+         y=param_corr, 
+         size=20, 
+         color="navy", 
+         alpha=0.5)
+	p.xaxis.axis_label = specie_corr
+	p.yaxis.axis_label = param_corr
+	h = HoverTool(renderers = [r],tooltips = [("date","@DATE_M_Y{%F}")],formatters={"@DATE_M_Y":"datetime"})
+	p.add_tools(h)
+	st.bokeh_chart(p)
+plot_figure12()
+     
+
