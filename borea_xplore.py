@@ -339,7 +339,7 @@ def plot_figure11():
 plot_figure11()
 
 """
-## Corrélation entre Espèce et Donnée hysico-chimique
+## Corrélation entre Espèces et Données physico-chimiques
 ---
 * issus des données physiques, chimiques de la colonne d’eau (SOMLIT)
 """
