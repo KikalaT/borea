@@ -1,2 +1,2 @@
 # borea
-Data Exploratory and Statistical Tools for Marine Biology
+Data Exploratory Visualizations and Statistical Tools for Marine Biology
