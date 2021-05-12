@@ -8,7 +8,7 @@ import pandas as pd
 import numpy as np
 
 from bokeh.plotting import figure
-from bokeh.tile_providers import get_provider, OSM
+from bokeh.tile_providers import get_provider, CARTODBPOSITRON
 from bokeh.models.tools import WheelZoomTool
 from bokeh.models import ColumnDataSource, LinearColorMapper
 from bokeh.io import show, output_notebook
@@ -54,7 +54,7 @@ df_gps = pd.DataFrame(df_.loc[:,['x','y']])
 df_show = pd.concat([df_gps,df_years], axis=1)
 
 # chargement du fond de carte
-tile_provider = get_provider(OSM)
+tile_provider = get_provider(CARTODBPOSITRON)
 
 # Création de la figure
 
