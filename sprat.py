@@ -62,6 +62,7 @@ p = figure(x_range=(-16000000, 16000000), y_range=(-1600000, 16000000),
 		   x_axis_type="mercator", y_axis_type="mercator",
 		   plot_width=800,
 		   plot_height=600,
+		   tools = "pan,wheel_zoom,box_select,box_zoom,reset,save",
 		   title='Modélisation : Sprattus sprattus sur la période : '+annee
 		   )
 
