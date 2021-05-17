@@ -74,7 +74,7 @@ geo_source = ColumnDataSource(data=df_show)
 color_mapper = LinearColorMapper(palette='Turbo256', low=df_show[annee].min(), high=df_show[annee].max())
 
 # points
-p.circle(x='x', y='y', color={'field': annee, 'transform': color_mapper}, alpha=0.7, source=geo_source)
+p.scatter(x='x', y='y', color={'field': annee, 'transform': color_mapper}, alpha=0.7, source=geo_source)
 
 # paramètres de la figure
 p.xgrid.grid_line_color = None
