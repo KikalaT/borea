@@ -33,19 +33,14 @@ st.title('Sprattus sprattus (1850-2017)')
 
 @st.cache(suppress_st_warning=True,allow_output_mutation=True)
 def preprocessing():
-	
-	df_data = 
-	pd.read_csv('https://www.jazzreal.org/static/export_data_sprat_data.csv', index_col=0)
+
+	df_data = pd.read_csv('https://www.jazzreal.org/static/export_data_sprat_data.csv', index_col=0)
 	k = 6378137
 	df_data["x"] = df_data['Longitude'] * (k * np.pi / 180.0)
 	df_data["y"] = np.log(np.tan((90 + df_data['Latitude']) * np.pi / 360.0)) * k
 	return df_data
 	
 df_ = preprocessing()
-
-
-
-
 
 """
 ### Aperçu des données modélisées :
