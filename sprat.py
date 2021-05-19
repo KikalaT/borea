@@ -59,6 +59,7 @@ df_years = pd.DataFrame(df_.loc[:,annee])
 df_gps = pd.DataFrame(df_.loc[:,['x','y']]) 
 df_show = pd.concat([df_gps,df_years], axis=1)
 df_mean = pd.DataFrame({'mean':df_.loc[:,'1850':'2017'].mean(axis=1)})
+df_annee = pd.DataFrame({'value':df_.loc[:,annee]})
 
 # chargement du fond de carte
 tile_provider = get_provider(CARTODBPOSITRON)
@@ -97,12 +98,14 @@ p.yaxis.axis_line_color = None
 p.xaxis.axis_line_color = None
 
 # create datasources
-s2 = ColumnDataSource(data={'index':[],'mean_value':[]})
+s2 = ColumnDataSource(data={'index':[],'value':[],'mean_value':[]})
 s3 = ColumnDataSource(data=df_mean)
+s4 = ColumnDataSource(data=df_annee)
 
 # create dynamic table of selected points
 columns = [
 	TableColumn(field='index', title="Index"),
+	TableColumn(field='value', title="Probabilité"),
 	TableColumn(field="mean_value", title="Probabilité moyenne"),
 ]
 
@@ -119,17 +122,24 @@ table = DataTable(
 s1.selected.js_on_change(
 	"indices",
 	CustomJS(
-		args=dict(s3=s3, s2=s2, table=table),
+		args=dict(s3=s3, s2=s2, s4=s4, table=table),
 		code="""
 		var inds = cb_obj.indices;
 		var d2 = s2.data;
 		var d3 = s3.data;
+		var d4 = s4.data;
 		
 		d2['index'] = inds
+		d2['value'] = []
 		d2['mean_value'] = []
+		
+		for (var i = 0; i < inds.length; i++) {
+            d2['value'].push(d4['value'][inds[i]])
+        }
 		for (var i = 0; i < inds.length; i++) {
             d2['mean_value'].push(d3['mean'][inds[i]])
         }
+        
 		s2.change.emit();
 		table.change.emit();
 		"""
