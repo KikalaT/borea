@@ -10,9 +10,7 @@ import numpy as np
 from bokeh.plotting import figure
 from bokeh.tile_providers import get_provider, CARTODBPOSITRON
 from bokeh.models.tools import WheelZoomTool, BoxSelectTool
-from bokeh.models import ColumnDataSource, LinearColorMapper, CustomJS
-from bokeh.models.widgets import DataTable, DateFormatter, TableColumn
-from bokeh.layouts import grid
+from bokeh.models import ColumnDataSource, LinearColorMapper
 
 import streamlit as st
 
@@ -26,7 +24,7 @@ layout="wide",
 st.title('Sprattus sprattus (1850-2017)')
 
 """
-### Source de la méthode d'analyse des données :
+### Source de la méthode de visualisation des données :
 [consultable ici](https://github.com/KikalaT/borea/blob/main/sprat.ipynb)
 """
 # ~ csv_file = st.file_uploader('Téléversez votre fichier CSV')
@@ -59,8 +57,8 @@ tile_provider = get_provider(CARTODBPOSITRON)
 
 p = figure(x_range=(-16000000, 16000000), y_range=(-1600000, 16000000),
 		   x_axis_type="mercator", y_axis_type="mercator",
-		   plot_width=800,
-		   plot_height=600,
+		   plot_width=1000,
+		   plot_height=800,
 		   tools = "pan,wheel_zoom,box_select,box_zoom,reset,save",
 		   title='Modélisation : Sprattus sprattus sur la période : '+annee
 		   )
@@ -88,55 +86,4 @@ p.yaxis.minor_tick_line_color = None
 p.yaxis.axis_line_color = None
 p.xaxis.axis_line_color = None
 
-# create datasources
-s2 = ColumnDataSource(data={'index':[],'value':[],'mean_value':[]})
-s3 = ColumnDataSource(data=df_mean)
-s4 = ColumnDataSource(data=df_annee)
-
-# create dynamic table of selected points
-columns = [
-	TableColumn(field='index', title="Index"),
-	TableColumn(field='value', title="Probabilité"),
-	TableColumn(field="mean_value", title="Probabilité moyenne"),
-]
-
-table = DataTable(
-	source=s2,
-	columns=columns,
-	width=400,
-	height=600,
-	sortable=True,
-	selectable=True,
-	editable=True,
-)
-
-s1.selected.js_on_change(
-	"indices",
-	CustomJS(
-		args=dict(s3=s3, s2=s2, s4=s4, table=table),
-		code="""
-		var inds = cb_obj.indices;
-		var d2 = s2.data;
-		var d3 = s3.data;
-		var d4 = s4.data;
-		
-		d2['index'] = inds
-		d2['value'] = []
-		d2['mean_value'] = []
-		
-		for (var i = 0; i < inds.length; i++) {
-            d2['value'].push(d4['value'][inds[i]])
-        }
-		for (var i = 0; i < inds.length; i++) {
-            d2['mean_value'].push(d3['mean'][inds[i]])
-        }
-        
-		s2.change.emit();
-		table.change.emit();
-		"""
-		)
-		)
-
-layout = grid([p, table], ncols=2)
-
-st.bokeh_chart(layout)
+st.bokeh_chart(p)
