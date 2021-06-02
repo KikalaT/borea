@@ -18,7 +18,7 @@ import streamlit as st
 
 # page configuration
 st.set_page_config(
-page_title="BoRea Xplore v1.0",
+page_title="Borea Xplore v1.0",
 layout="wide",
 )
 
@@ -36,6 +36,7 @@ def preprocessing():
 
 	df_data = pd.read_csv('https://www.jazzreal.org/static/export_data_sprat_data.csv', index_col=0)
 	k = 6378137
+	df_data = df_data.sample(frac=0.1,replace=False)
 	df_data["x"] = df_data['Longitude'] * (k * np.pi / 180.0)
 	df_data["y"] = np.log(np.tan((90 + df_data['Latitude']) * np.pi / 360.0)) * k
 	return df_data
@@ -55,97 +56,77 @@ st.write(df_.head())
 annee = st.selectbox('Année',df_.columns.unique()[2:])
 
 # création des sources de travail
-df_years = pd.DataFrame(df_.loc[:,annee])
+df_year = pd.DataFrame(df_.loc[:,annee])
 df_gps = pd.DataFrame(df_.loc[:,['x','y']]) 
-df_show = pd.concat([df_gps,df_years], axis=1)
-df_mean = pd.DataFrame({'mean':df_.loc[:,'1850':'2017'].mean(axis=1)})
-df_annee = pd.DataFrame({'value':df_.loc[:,annee]})
+df_show = pd.concat([df_gps,df_year], axis=1)
+df_ts = df_.loc[:,'1850':'2017']
 
 # chargement du fond de carte
 tile_provider = get_provider(CARTODBPOSITRON)
 
-# Création de la figure
+# Création de la figure 1
 
-p = figure(x_range=(-16000000, 16000000), y_range=(-1600000, 16000000),
+p1 = figure(x_range=(-16000000, 16000000), y_range=(-1600000, 16000000),
 		   x_axis_type="mercator", y_axis_type="mercator",
-		   plot_width=800,
-		   plot_height=600,
+		   plot_width=600,
+		   plot_height=500,
 		   tools = "pan,wheel_zoom,box_select,box_zoom,reset,save",
 		   title='Modélisation : Sprattus sprattus sur la période : '+annee
 		   )
 
-p.add_tile(tile_provider)
+p1.add_tile(tile_provider)
 
-# source
+# source 1
 s1 = ColumnDataSource(data=df_show)
 
 # gradient de couleurs
 color_mapper = LinearColorMapper(palette='Turbo256', low=df_show[annee].min(), high=df_show[annee].max())
 
 # points
-p.scatter(x='x', y='y', color={'field': annee, 'transform': color_mapper}, alpha=0.7, source=s1)
+p1.scatter(x='x', y='y', color={'field': annee, 'transform': color_mapper}, alpha=0.7, source=s1)
 
 # paramètres de la figure
-p.xgrid.grid_line_color = None
-p.ygrid.grid_line_color = None
-p.xaxis.major_label_text_color = None
-p.yaxis.major_label_text_color = None
-p.xaxis.major_tick_line_color = None  
-p.xaxis.minor_tick_line_color = None  
-p.yaxis.major_tick_line_color = None  
-p.yaxis.minor_tick_line_color = None  
-p.yaxis.axis_line_color = None
-p.xaxis.axis_line_color = None
+p1.xgrid.grid_line_color = None
+p1.ygrid.grid_line_color = None
+p1.xaxis.major_label_text_color = None
+p1.yaxis.major_label_text_color = None
+p1.xaxis.major_tick_line_color = None  
+p1.xaxis.minor_tick_line_color = None  
+p1.yaxis.major_tick_line_color = None  
+p1.yaxis.minor_tick_line_color = None  
+p1.yaxis.axis_line_color = None
+p1.xaxis.axis_line_color = None
 
 # create datasources
-s2 = ColumnDataSource(data={'index':[],'value':[],'mean_value':[]})
-s3 = ColumnDataSource(data=df_mean)
-s4 = ColumnDataSource(data=df_annee)
-
-# create dynamic table of selected points
-columns = [
-	TableColumn(field='index', title="Index"),
-	TableColumn(field='value', title="Probabilité"),
-	TableColumn(field="mean_value", title="Probabilité moyenne"),
-]
-
-table = DataTable(
-	source=s2,
-	columns=columns,
-	width=400,
-	height=600,
-	sortable=True,
-	selectable=True,
-	editable=True,
-)
+s2 = ColumnDataSource(data=df_ts)
+s3 = ColumnDataSource(data={'index':[],'value':[]})
 
 s1.selected.js_on_change(
 	"indices",
 	CustomJS(
-		args=dict(s3=s3, s2=s2, s4=s4, table=table),
+		args=dict(s2=s2),
 		code="""
 		var inds = cb_obj.indices;
 		var d2 = s2.data;
 		var d3 = s3.data;
-		var d4 = s4.data;
 		
-		d2['index'] = inds
-		d2['value'] = []
-		d2['mean_value'] = []
+		d3 = d2[inds]
+		d2['x'] = s2.data.keys()
+		d2['y'] = s2.data.keys()
 		
-		for (var i = 0; i < inds.length; i++) {
-            d2['value'].push(d4['value'][inds[i]])
-        }
-		for (var i = 0; i < inds.length; i++) {
-            d2['mean_value'].push(d3['mean'][inds[i]])
-        }
-        
 		s2.change.emit();
-		table.change.emit();
+		p2.change.emit();
 		"""
 		)
 		)
 
-layout = grid([p, table], ncols=2)
+# création de la figure 2
+p2 = figure(plot_width=600, plot_height=500)
+p2.line(list(s2.data.keys()),np.array([s2.data[k] for k in s2.data]).mean(axis=1))
+
+# layout final
+layout = grid([p1,p2], ncols=2)
 
 st.bokeh_chart(layout)
+
+
